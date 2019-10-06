@@ -10,6 +10,7 @@ def get_timeline(url):
     html = bs(data.text, 'html.parser')
     # get timeline
     timeline = html.select('#timeline li.stream-item')
+<<<<<<< HEAD
 
     # makes a file to see the exact html we're working with, but formatted
     # nicely. Uncomment the next two lines to do so.
@@ -17,6 +18,10 @@ def get_timeline(url):
     # with open('html.html', 'w', encoding='utf-8') as f_out:
         # f_out.write(html.prettify())
 
+=======
+    with open('html.html', 'w', encoding='utf-8') as f_out:
+        f_out.write(html.prettify())
+>>>>>>> db3913dd1acdf3610ce4ba33f1fcf9a0f51c07e4
     for tweet in timeline:
         tweet_id = tweet['data-item-id']
         tweet_link = '{}'.format(url) + '/status/' + tweet_id
@@ -33,7 +38,11 @@ def get_timeline(url):
                 in_tweet_links.append(link['href'])
 
         # uses regex to find links to pic.twitter.com, since they're always
+<<<<<<< HEAD
         # at the end, we can just use (.*)
+=======
+        # at the end, we can just use .*
+>>>>>>> db3913dd1acdf3610ce4ba33f1fcf9a0f51c07e4
         found = re.findall('pic.twitter.com/(.*)', tweet_text)
 
         # output to a list of dictionaries
@@ -42,6 +51,10 @@ def get_timeline(url):
             all_tweets.append({"id": tweet_id, "text": tweet_text, "link_to_tweet": tweet_link, "links": in_tweet_links, "link_to_pic": pic_link})
         else:
             all_tweets.append({"id": tweet_id, "text": tweet_text, "link_to_tweet": tweet_link, "links": in_tweet_links})
+<<<<<<< HEAD
+=======
+
+>>>>>>> db3913dd1acdf3610ce4ba33f1fcf9a0f51c07e4
 
     print(all_tweets)
 
@@ -49,6 +62,7 @@ def get_timeline(url):
 if __name__ == '__main__':
     url = 'https://twitter.com/IsaacBeale2'
     get_timeline(url)
+<<<<<<< HEAD
 
 
 # TO DO:
@@ -56,3 +70,5 @@ if __name__ == '__main__':
 #   store tweets from TL in a database and query it to see if its new
 #   change so that it scrapes the newest tweet rather than the whole TL
 #   asynchronously make multiple requests to a page
+=======
+>>>>>>> db3913dd1acdf3610ce4ba33f1fcf9a0f51c07e4
