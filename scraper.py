@@ -5,11 +5,14 @@ import aiohttp
 import asyncio
 from bs4 import BeautifulSoup as bs
 
-# takes a url, and takes number of tweets to output
+
 async def fetch(session, url):
+    proxy_auth = aiohttp.BasicAuth('ike_on1687', 'BkOgz6B9SL9M')
     async with session.get(url) as response:
         return await response.text()
 
+
+# takes a url, and takes number of tweets to
 async def get_recent(username, n):
     base_link = 'https://twitter.com'
     url = base_link + '/' + username
@@ -59,14 +62,17 @@ async def get_recent(username, n):
     print(recent_tweets)
 
 def main():
-    username = 'IsaacBeale2'
+    usernames = ['IsaacBeale2',
+                'RestockWorld',
+                'Abilityyyyy',
+                'CalicosIO',
+                'MEKRobotics',
+                ]
+
     start_time = time.time()
     loop = asyncio.get_event_loop()
-    all_groups = asyncio.gather(get_recent(username, 1), get_recent(username, 1), get_recent(username, 1), get_recent(username, 1), get_recent(username, 1))
+    all_groups = asyncio.gather(*[get_recent(name, 1) for name in usernames])
     results = loop.run_until_complete(all_groups)
-    # get_recent(username, 1)
-    # get_recent(username, 1)
-    # get_recent(username, 1)
     print("Took %s seconds to execute" % (time.time() - start_time))
 
 
