@@ -39,7 +39,7 @@ params = (
 ('include_my_retweet', '1'),
 ('since_id', '1193304574762852358'),
 ('include_rts', '1'),
-('user_id', '1047920834050846720'),
+('user_id', '1139036457048379397'),
 ('cards_platform', 'Web-13'),
 ('include_entities', '1'),
 ('include_user_entities', '1'),

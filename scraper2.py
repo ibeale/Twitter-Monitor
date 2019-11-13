@@ -6,108 +6,12 @@ from datetime import datetime
 from utils import get_proxy
 import webbrowser
 from discord_webhook import DiscordEmbed, DiscordWebhook
+import json
 
 global_id = 0
 counter = 0
-cookie_header_pairs = [
-    {'cookie': {
-        'personalization_id': 'v1_RoPtB41SlpatEEfyYliIvA==',
-        'guest_id': 'v1%3A155666719981665034',
-        '_ga': 'GA1.2.134835951.1556667201',
-        '_gid': 'GA1.2.255002093.1573504394',
-        '_gat': '1',
-        'gt': '1193990088880836608',
-        'ct0': 'c020dcf4100acf64786504c35d9bfca3',
-        '_twitter_sess': 'BAh7CiIKZmxhc2hJQzonQWN0aW9uQ29udHJvbGxlcjo6Rmxhc2g6OkZsYXNo%250ASGFzaHsABjoKQHVzZWR7ADoPY3JlYXRlZF9hdGwrCPGpK1xuAToMY3NyZl9p%250AZCIlOGI2Mjk1ZTRmZmExNzBiNmQyNWU1NzE5YjhlMGRmM2Q6B2lkIiVlYzAw%250ANjRmYWJiYWQ0OGI3ZjY3ZGU1NGNkYjA2MTUyMDoJdXNlcmkEq2ByEw%253D%253D--e3cf2769ceba6d2cbc3efe62de1d0b5cf1c951c8',
-        'external_referer': 'padhuUp37zhJObO73CqsXZ0%2BLgQ%2Btq8mzPyoRg8vB3o%3D|0|8e8t2xd8A2w%3D',
-        'ads_prefs': 'HBIRAAA=',
-        'kdt': 'eKJU2EhRyGVOaDv25RPIEiDxbYgvsGBZT57XwVjE',
-        'remember_checked_on': '1',
-        'twid': 'u=326262955',
-        'u': 'af8bb7eafbf989bb65037e7f76313476',
-        'auth_token': '2d3e53cd2a20c0ed9750dae52a8d5eb511f02edc',
-        'lang': 'en',
-        },
-    'header': {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0',
-        'Accept': 'text/plain, */*; q=0.01',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Referer': 'https://tweetdeck.twitter.com/',
-        'Authorization': 'Bearer AAAAAAAAAAAAAAAAAAAAAF7aAAAAAAAASCiRjWvh7R5wxaKkFp7MM%2BhYBqM%3DbQ0JPmjU9F6ZoMhDfI4uTNAaQuTDm2uO9x3WFVr2xBZ2nhjdP0',
-        'X-Twitter-Auth-Type': 'OAuth2Session',
-        'X-Csrf-Token': 'c020dcf4100acf64786504c35d9bfca3',
-        'X-Twitter-Client-Version': 'Twitter-TweetDeck-blackbird-chrome/4.0.191015095829 web/',
-        'Origin': 'https://tweetdeck.twitter.com',
-        'Connection': 'keep-alive',
-        'TE': 'Trailers',
-        }
-    },
-    {'cookie': {
-    '_ga': 'GA1.2.91199772.1573596064',
-    '_gid': 'GA1.2.1475200831.1573596064',
-    'gt': '1194374598470463488',
-    'ct0': '177214c82a4c0b49c0c187220867803d',
-    'kdt': 's1bLFJ3hNMatGwvRIDKo3nG2u6CKsfxi0HScGuxr',
-    'remember_checked_on': '1',
-    'lang': 'en',
-    'dnt': '1',
-    'personalization_id': 'v1_1yYxx2TANsPAinAw4DdlQQ==',
-    'guest_id': 'v1%3A157359875564328763',
-    '_twitter_sess': 'BAh7CiIKZmxhc2hJQzonQWN0aW9uQ29udHJvbGxlcjo6Rmxhc2g6OkZsYXNo%250ASGFzaHsABjoKQHVzZWR7ADoPY3JlYXRlZF9hdGwrCNSIy2FuAToMY3NyZl9p%250AZCIlZDFjODE2NjM5NWI3ZmJhZGU1MjdjMzNkZDMzMTViMjY6B2lkIiViM2Q1%250AYjFlNTIwNmYzZDRiMDUwODI5NjJkMjQxNDE2OToJdXNlcmwrCQBQVB5zOIIO--9cae7de50dd7e7eb54838170f239576879201ac3',
-    'external_referer': 'padhuUp37zhJObO73CqsXZ0%2BLgQ%2Btq8mzPyoRg8vB3o%3D|0|8e8t2xd8A2w%3D',
-    'ads_prefs': 'HBISAAA=',
-    'twid': 'u=1045460130584612864',
-    'u': '847f15ba60eefc338542be3df8e9f61a',
-    'auth_token': '67eaf791c7b834eea8995d112cff5b04d59e4a1c',
-    },
-    'header': {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0',
-    'Accept': 'text/plain, */*; q=0.01',
-    'Accept-Language': 'en-US,en;q=0.5',
-    'Authorization': 'Bearer AAAAAAAAAAAAAAAAAAAAAF7aAAAAAAAASCiRjWvh7R5wxaKkFp7MM%2BhYBqM%3DbQ0JPmjU9F6ZoMhDfI4uTNAaQuTDm2uO9x3WFVr2xBZ2nhjdP0',
-    'X-Twitter-Auth-Type': 'OAuth2Session',
-    'X-Csrf-Token': '177214c82a4c0b49c0c187220867803d',
-    'X-Twitter-Client-Version': 'Twitter-TweetDeck-blackbird-chrome/4.0.191015095829 web/',
-    'Origin': 'https://tweetdeck.twitter.com',
-    'Connection': 'keep-alive',
-    'Referer': 'https://tweetdeck.twitter.com/',
-    'TE': 'Trailers',
-    },
-    },
-    {'cookie': {
-    'personalization_id': 'v1_6+oJYDzT0lGxwvWSKrgCUA==',
-    'guest_id': 'v1%3A157359918873531434',
-    '_ga': 'GA1.2.1262219233.1573599186',
-    '_gid': 'GA1.2.160722294.1573599186',
-    '_gat': '1',
-    'gt': '1194387693083353088',
-    'ct0': 'a8c4636abb4a62d3d300c29193c17b43',
-    '_twitter_sess': 'BAh7CiIKZmxhc2hJQzonQWN0aW9uQ29udHJvbGxlcjo6Rmxhc2g6OkZsYXNo%250ASGFzaHsABjoKQHVzZWR7ADoPY3JlYXRlZF9hdGwrCD0n0mFuAToMY3NyZl9p%250AZCIlYzBkMjYyMzhjMzQyM2Y3OGY2MGRiZjEzMzM0NjBkZmI6B2lkIiU1NTcz%250AMTBlNDY2YzU5YmIxZjAzNTQ3MTlmZDIzZmI3MToJdXNlcmwrCQDwVEpy9ooO--7daad1b6aefc70cef055b7a468f423c80e0eec5b',
-    'external_referer': 'padhuUp37zhJObO73CqsXZ0%2BLgQ%2Btq8mzPyoRg8vB3o%3D|0|8e8t2xd8A2w%3D',
-    'dnt': '1',
-    'ads_prefs': 'HBISAAA=',
-    'kdt': '4hU6W39Yyj6fN5vgW854pcoNb3OU0kVE4ylY2OXu',
-    'remember_checked_on': '1',
-    'twid': 'u=1047920834050846720',
-    'u': '642e8b995a0aa941588f3443bc0f0b33',
-    'auth_token': '709fbecd8b1999bf73714ae386b57fa326533d4c',
-    'lang': 'en',
-    },
-    'header': {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0',
-    'Accept': 'text/plain, */*; q=0.01',
-    'Accept-Language': 'en-US,en;q=0.5',
-    'Authorization': 'Bearer AAAAAAAAAAAAAAAAAAAAAF7aAAAAAAAASCiRjWvh7R5wxaKkFp7MM%2BhYBqM%3DbQ0JPmjU9F6ZoMhDfI4uTNAaQuTDm2uO9x3WFVr2xBZ2nhjdP0',
-    'X-Twitter-Auth-Type': 'OAuth2Session',
-    'X-Csrf-Token': 'a8c4636abb4a62d3d300c29193c17b43',
-    'X-Twitter-Client-Version': 'Twitter-TweetDeck-blackbird-chrome/4.0.191015095829 web/',
-    'Origin': 'https://tweetdeck.twitter.com',
-    'Connection': 'keep-alive',
-    'Referer': 'https://tweetdeck.twitter.com/',
-    'TE': 'Trailers',
-    },
-    },
-]
+json_cookie_pairs = open("cookie_pairs.json", "r")
+cookie_header_pairs = json.load(json_cookie_pairs)
 
 class URL:
     def __init__(self):
