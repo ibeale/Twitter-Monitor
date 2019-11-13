@@ -1,87 +1,57 @@
 import requests
-import re
-import time
-import aiohttp
-import asyncio
-from bs4 import BeautifulSoup as bs
+import json
 
+cookies =  {
+    'personalization_id': 'v1_RoPtB41SlpatEEfyYliIvA==',
+    'guest_id': 'v1%3A155666719981665034',
+    '_ga': 'GA1.2.134835951.1556667201',
+    '_gid': 'GA1.2.255002093.1573504394',
+    '_gat': '1',
+    'gt': '1193990088880836608',
+    'ct0': 'c020dcf4100acf64786504c35d9bfca3',
+    '_twitter_sess': 'BAh7CiIKZmxhc2hJQzonQWN0aW9uQ29udHJvbGxlcjo6Rmxhc2g6OkZsYXNo%250ASGFzaHsABjoKQHVzZWR7ADoPY3JlYXRlZF9hdGwrCPGpK1xuAToMY3NyZl9p%250AZCIlOGI2Mjk1ZTRmZmExNzBiNmQyNWU1NzE5YjhlMGRmM2Q6B2lkIiVlYzAw%250ANjRmYWJiYWQ0OGI3ZjY3ZGU1NGNkYjA2MTUyMDoJdXNlcmkEq2ByEw%253D%253D--e3cf2769ceba6d2cbc3efe62de1d0b5cf1c951c8',
+    'external_referer': 'padhuUp37zhJObO73CqsXZ0%2BLgQ%2Btq8mzPyoRg8vB3o%3D|0|8e8t2xd8A2w%3D',
+    'ads_prefs': 'HBIRAAA=',
+    'kdt': 'eKJU2EhRyGVOaDv25RPIEiDxbYgvsGBZT57XwVjE',
+    'remember_checked_on': '1',
+    'twid': 'u=326262955',
+    'u': 'af8bb7eafbf989bb65037e7f76313476',
+    'auth_token': '2d3e53cd2a20c0ed9750dae52a8d5eb511f02edc',
+    'lang': 'en',
+    }
 
-async def fetch(session, url):
-    proxy_auth = aiohttp.BasicAuth('ike_on1687', 'BkOgz6B9SL9M')
-    async with session.get(url) as response:
-        return await response.text()
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0',
+    'Accept': 'text/plain, */*; q=0.01',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Referer': 'https://tweetdeck.twitter.com/',
+    'Authorization': 'Bearer AAAAAAAAAAAAAAAAAAAAAF7aAAAAAAAASCiRjWvh7R5wxaKkFp7MM%2BhYBqM%3DbQ0JPmjU9F6ZoMhDfI4uTNAaQuTDm2uO9x3WFVr2xBZ2nhjdP0',
+    'X-Twitter-Auth-Type': 'OAuth2Session',
+    'X-Csrf-Token': 'c020dcf4100acf64786504c35d9bfca3',
+    'X-Twitter-Client-Version': 'Twitter-TweetDeck-blackbird-chrome/4.0.191015095829 web/',
+    'Origin': 'https://tweetdeck.twitter.com',
+    'Connection': 'keep-alive',
+    'TE': 'Trailers',
+    }
 
+params = (
+('count', '40'),
+('include_my_retweet', '1'),
+('since_id', '1193304574762852358'),
+('include_rts', '1'),
+('user_id', '1047920834050846720'),
+('cards_platform', 'Web-13'),
+('include_entities', '1'),
+('include_user_entities', '1'),
+('include_cards', '1'),
+('send_error_codes', '1'),
+('tweet_mode', 'extended'),
+('include_ext_alt_text', 'true'),
+('include_reply_count', 'true'),
+)
 
-# takes a url, and takes number of tweets to
-async def get_recent(username, n):
-    base_link = 'https://twitter.com'
-    url = base_link + '/' + username
-    async with aiohttp.ClientSession() as session:
-        data_text = await fetch(session, url)
-    # data = requests.get(url)
-    recent_tweets = []
-    html = bs(data_text, 'html.parser')
-    # get timeline
-    timeline = html.select('#timeline li.stream-item')
+response = requests.get("https://api.twitter.com/1.1/statuses/user_timeline.json", headers=headers, params=params, cookies=cookies)
+json_data = response.json()
 
-    # DEBUG makes a file to see the exact html we're working with, but
-    # formatted nicely. Uncomment the next two lines to do so.
-
-    # with open('html.html', 'w', encoding='utf-8') as f_out:
-        # f_out.write(html.prettify())
-
-    for tweet in timeline[:n]:
-        tweet_id = tweet['data-item-id']
-        tweet_link = '{}'.format(url) + '/status/' + tweet_id
-        tweet_text = tweet.select('p.tweet-text')[0].get_text()
-        tweet_text = tweet_text.replace(u'\xa0', u' ')
-        tweet_text = tweet_text.replace('https://', ' https://')
-        tweet_text = tweet_text.replace('\n', ' ')
-
-        # selects all <a> tags with class='twitter-timeline-link'
-        redir_html = tweet.select('p.tweet-text a.twitter-timeline-link')
-        in_tweet_links = []
-
-        # if we find an <a> tag with the right class, iterate through
-        # them to extract all href links. This gives us the t.co links
-        if(redir_html):
-            for link in redir_html:
-                in_tweet_links.append(link['href'])
-
-        # uses regex to find links to pic.twitter.com, since they're always
-        # at the end, we can just use (.*)
-        found = re.findall('pic.twitter.com/(.*)', tweet_text)
-
-        # output to a list of dictionaries
-        if(found):
-            pic_link = 'pic.twitter.com/{}'.format(found[0])
-            recent_tweets.append({"id": tweet_id, "text": tweet_text, "link_to_tweet": tweet_link, "links": in_tweet_links, "link_to_pic": pic_link})
-        else:
-            recent_tweets.append({"id": tweet_id, "text": tweet_text, "link_to_tweet": tweet_link, "links": in_tweet_links})
-
-    print(recent_tweets)
-
-def main():
-    usernames = ['IsaacBeale2',
-                'RestockWorld',
-                'Abilityyyyy',
-                'CalicosIO',
-                'MEKRobotics',
-                ]
-
-    start_time = time.time()
-    loop = asyncio.get_event_loop()
-    all_groups = asyncio.gather(*[get_recent(name, 1) for name in usernames])
-    results = loop.run_until_complete(all_groups)
-    print("Took %s seconds to execute" % (time.time() - start_time))
-
-
-if __name__ == '__main__':
-    main()
-
-
-# TO DO:
-#   Decide whether to monitor RTs or not. (Currently pulls RTS)
-#   store tweets from TL in a database and query it to see if its new
-#   change so that it scrapes the newest tweet rather than the whole TL
-#   asynchronously make multiple requests to a page
+f = open('timelinejson.txt', 'w')
+json.dump(json_data, f)
