@@ -3,7 +3,7 @@ import aiohttp
 import asyncio
 import lxml.html
 from datetime import datetime
-from utils import get_proxy_list
+from utils import get_proxy
 import webbrowser
 from discord_webhook import DiscordEmbed, DiscordWebhook
 
@@ -160,7 +160,7 @@ async def get_recent(id, username, proxy, i):
     ('include_reply_count', 'true'),
 )
     async with aiohttp.ClientSession() as session:
-        #session.proxies=proxy
+        session.proxies=proxy
         json_data = await fetch(session, headers, params, cookies)
         #global counter
         #counter += 1
@@ -216,7 +216,7 @@ def fetch_profile_id(username):
 
 
 def post_to_webhook(new_tweet:Tweet, username):
-        url = "https://discordapp.com/api/webhooks/629370837052424193/iy1islXtvB-YuRCfwi1HYbQ1qGT_elSNfm2DSnDtwqOB9rUkt8_iXlM3oxDGX6U6VYvC"
+        url = "https://discordapp.com/api/webhooks/643995295541362688/dZCTze4i31lOp2sVHAyXRM-KfatO4oPVy7eurZlryPyjtzd4MXucQBYXHMOr1_1jvI5f"
         webhook = DiscordWebhook(url)
         embed = DiscordEmbed(title=f"Link to tweet", url=f"https://twitter.com/{new_tweet.screen_name}/status/{new_tweet.id}")
         embed.set_author(name=f"New tweet from {new_tweet.screen_name}", url=f'https://twitter.com/{new_tweet.screen_name}', icon_url=new_tweet.profile_image_url)
@@ -234,10 +234,8 @@ def main():
     i = 0
     j = 0
     max_i = len(cookie_header_pairs)
-    proxies = get_proxy_list()
-    num_proxies = len(proxies)
     while(True):
-        proxy = proxies[j]
+        proxy = get_proxy()
         loop = asyncio.get_event_loop()
         all_groups = asyncio.gather(*[get_recent(id, username, proxy, i) for _ in range(n)])
         try:
@@ -248,10 +246,6 @@ def main():
                 i = 0
             else:
                 i += 1
-            if(j >= num_proxies):
-                j = 0
-            else:
-                j += 1
 
 
 if __name__ == '__main__':
