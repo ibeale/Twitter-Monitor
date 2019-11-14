@@ -7,6 +7,7 @@ from utils import get_proxy
 import webbrowser
 from discord_webhook import DiscordEmbed, DiscordWebhook
 import json
+import time
 
 global_id = 0
 counter = 0
@@ -18,20 +19,38 @@ class URL:
         self.tco = None
         self.url = None
 
+class User:
+    username: str
+    userid: str
+    screen_name: str
+
+    def __init__(self, username=None, userid=None, screen_name=None):
+        self.username = username
+        self.userid = userid
+        self.screen_name = screen_name
+
+
+class UserProfile(User):
+    description: str
+    location: str
+    profile_image_url: str
+
+    def __init__(self, username=None, userid=None, screen_name=None):
+        self.urls = []
+        super().__init__(username, userid, screen_name)
+
 class Tweet:
     id: int
     text: str
     link_to_tweet: str
     link_to_pic: str
-    username: str
-    userid: str
-    screen_name: str
-    profile_image_url: str
+    created_by: UserProfile
 
 
 
     def __init__(self):
         self.links_in_tweet = []
+        self.mentioned_users = []
 
 
 async def fetch(session, headers, params, cookies):
@@ -74,33 +93,37 @@ async def get_recent(id, username, proxy, i):
         new_tweet = Tweet()
         new_tweet.id = json_data[0]["id_str"]
         new_tweet.text = json_data[0]["full_text"]
-        new_tweet.username = json_data[0]["user"]["name"]
-        new_tweet.screen_name = json_data[0]["user"]["screen_name"]
-        new_tweet.profile_image_url = json_data[0]["user"]["profile_image_url"]
-        new_tweet.userid = json_data[0]["user"]["id_str"]
+        new_tweet.created_by = UserProfile(username=json_data[0]["user"]["name"], screen_name=json_data[0]["user"]["screen_name"], userid=json_data[0]["user"]["id_str"])
+        new_tweet.created_by.profile_image_url = json_data[0]["user"]["profile_image_url"]
+        new_tweet.created_by.description = json_data[0]["user"]["description"]
+        new_tweet.created_by.location = json_data[0]["user"]["location"]
+        for mentioned_user in json_data[0]["entities"]["user_mentions"]:
+            new_tweet.mentioned_users.append(User(username=mentioned_user["name"], userid=mentioned_user["id_str"], screen_name=mentioned_user["screen_name"]))
         urls = json_data[0]["entities"]["urls"]
         for url in urls:
             url_class = URL()
             url_class.tco = url["url"]
             url_class.url = url["expanded_url"]
             new_tweet.links_in_tweet.append(url_class)
-        await print_new(new_tweet, username)
+        print_new(new_tweet)
     except Exception as ke:
         print(ke)
         raise
 
 
-async def print_new(new_tweet: Tweet, username):
+def print_new(new_tweet: Tweet):
     global global_id
     if(int(new_tweet.id) > global_id):
-        if(new_tweet.links_in_tweet):
-            for link in new_tweet.links_in_tweet:
-                webbrowser.open_new_tab(link.url)
-        global_id = int(new_tweet.id)
-        post_to_webhook(new_tweet, username)
+        post_start = time.time()
         print(new_tweet.text)
         current_time = datetime.now().strftime("%I:%M:%S.%f %p")
         print(current_time)
+        global_id = int(new_tweet.id)
+        if(new_tweet.links_in_tweet):
+            for link in new_tweet.links_in_tweet:
+                webbrowser.open_new_tab(link.url)
+        post_to_webhook(new_tweet)
+        print(f"Took {time.time() - post_start} to post")
 
 
 def fetch_profile_id(username):
@@ -119,12 +142,17 @@ def fetch_profile_id(username):
     return id_number
 
 
-def post_to_webhook(new_tweet:Tweet, username):
-        url = "https://discordapp.com/api/webhooks/643995295541362688/dZCTze4i31lOp2sVHAyXRM-KfatO4oPVy7eurZlryPyjtzd4MXucQBYXHMOr1_1jvI5f"
+def post_to_webhook(new_tweet:Tweet):
+        url = "https://discordapp.com/api/webhooks/629370837052424193/iy1islXtvB-YuRCfwi1HYbQ1qGT_elSNfm2DSnDtwqOB9rUkt8_iXlM3oxDGX6U6VYvC"
+        text = new_tweet.text
         webhook = DiscordWebhook(url)
-        embed = DiscordEmbed(title=f"Link to tweet", url=f"https://twitter.com/{new_tweet.screen_name}/status/{new_tweet.id}")
-        embed.set_author(name=f"New tweet from {new_tweet.screen_name}", url=f'https://twitter.com/{new_tweet.screen_name}', icon_url=new_tweet.profile_image_url)
+        embed = DiscordEmbed(title=f"Link to tweet", url=f"https://twitter.com/{new_tweet.created_by.screen_name}/status/{new_tweet.id}")
+        embed.set_author(name=f"New tweet from {new_tweet.created_by.screen_name}", url=f'https://twitter.com/{new_tweet.created_by.screen_name}', icon_url=new_tweet.created_by.profile_image_url)
+        for mentioned_user in new_tweet.mentioned_users:
+            text = text.replace(f"@{mentioned_user.screen_name}", f"[@{mentioned_user.screen_name}](https://twitter.com/{mentioned_user.screen_name})")
         embed.add_embed_field(name="Content: ", value=new_tweet.text, inline=True)
+        for url in new_tweet.links_in_tweet:
+            embed.add_embed_field(name="Link Found: ", value=f"{url.url} - [tco]({url.tco})")
         embed.set_footer(text=f'Monitor by ike_on')
         webhook.add_embed(embed)
         webhook.execute()
@@ -132,11 +160,10 @@ def post_to_webhook(new_tweet:Tweet, username):
 
 def main():
 
-    username = "stronomic"
+    username = "juicynotify"
     id = fetch_profile_id(username)
     n = 3
     i = 0
-    j = 0
     max_i = len(cookie_header_pairs)
     while(True):
         proxy = get_proxy()
