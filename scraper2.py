@@ -5,7 +5,7 @@ import lxml.html
 from datetime import datetime
 from utils import get_proxy
 import webbrowser
-from discord_webhook import DiscordEmbed, DiscordWebhook
+from dhooks import Webhook, Embed
 import json
 import time
 
@@ -84,7 +84,9 @@ async def get_recent(id, username, proxy, i):
 )
     async with aiohttp.ClientSession() as session:
         session.proxies=proxy
+        start_fetch = time.time()
         json_data = await fetch(session, headers, params, cookies)
+        print(f"Took {time.time() - start_fetch} seconds to fetch")
         #global counter
         #counter += 1
         #print(f"Scrape number {counter}")
@@ -105,25 +107,26 @@ async def get_recent(id, username, proxy, i):
             url_class.tco = url["url"]
             url_class.url = url["expanded_url"]
             new_tweet.links_in_tweet.append(url_class)
-        print_new(new_tweet)
+        global global_id
+        if(global_id == 0):
+            global_id = int(new_tweet.id)
+        elif(int(new_tweet.id) > global_id):
+            global_id = int(new_tweet.id)
+            await print_new(new_tweet)
     except Exception as ke:
         print(ke)
         raise
 
 
-def print_new(new_tweet: Tweet):
-    global global_id
-    if(int(new_tweet.id) > global_id):
-        post_start = time.time()
-        print(new_tweet.text)
-        current_time = datetime.now().strftime("%I:%M:%S.%f %p")
-        print(current_time)
-        global_id = int(new_tweet.id)
-        if(new_tweet.links_in_tweet):
-            for link in new_tweet.links_in_tweet:
-                webbrowser.open_new_tab(link.url)
-        post_to_webhook(new_tweet)
-        print(f"Took {time.time() - post_start} to post")
+async def print_new(new_tweet: Tweet):
+    print(new_tweet.text)
+    current_time = datetime.now().strftime("%I:%M:%S.%f %p")
+    print(current_time)
+    #if(new_tweet.links_in_tweet):
+        #for link in new_tweet.links_in_tweet:
+            #webbrowser.open_new_tab(link.url)
+    await post_to_webhook(new_tweet)
+
 
 
 def fetch_profile_id(username):
@@ -142,35 +145,42 @@ def fetch_profile_id(username):
     return id_number
 
 
-def post_to_webhook(new_tweet:Tweet):
-        url = "https://discordapp.com/api/webhooks/629370837052424193/iy1islXtvB-YuRCfwi1HYbQ1qGT_elSNfm2DSnDtwqOB9rUkt8_iXlM3oxDGX6U6VYvC"
+async def post_to_webhook(new_tweet:Tweet):
+        start_time = time.time()
+        url = "https://discordapp.com/api/webhooks/644312784238280704/6kpuCfI1QVO0uEa_DZBIzZYMDzH97Sf86ii1_EFhVOajcdel9cgeNjMEay5HyLj2ZWDS"
         text = new_tweet.text
-        webhook = DiscordWebhook(url)
-        embed = DiscordEmbed(title=f"Link to tweet", url=f"https://twitter.com/{new_tweet.created_by.screen_name}/status/{new_tweet.id}")
+        webhook = Webhook.Async(url)
+        embed = Embed(title=f"Link to tweet", url=f"https://twitter.com/{new_tweet.created_by.screen_name}/status/{new_tweet.id}")
         embed.set_author(name=f"New tweet from {new_tweet.created_by.screen_name}", url=f'https://twitter.com/{new_tweet.created_by.screen_name}', icon_url=new_tweet.created_by.profile_image_url)
         for mentioned_user in new_tweet.mentioned_users:
             text = text.replace(f"@{mentioned_user.screen_name}", f"[@{mentioned_user.screen_name}](https://twitter.com/{mentioned_user.screen_name})")
-        embed.add_embed_field(name="Content: ", value=new_tweet.text, inline=True)
+        embed.add_field(name="Content: ", value=new_tweet.text, inline=True)
         for url in new_tweet.links_in_tweet:
-            embed.add_embed_field(name="Link Found: ", value=f"{url.url} - [tco]({url.tco})")
+            embed.add_field(name="Link Found: ", value=f"{url.url}")
         embed.set_footer(text=f'Monitor by ike_on')
-        webhook.add_embed(embed)
-        webhook.execute()
+        await webhook.send(embed=embed)
+        print(f"Took {time.time() - start_time} seconds to send to webhook")
+        for url in new_tweet.links_in_tweet:
+            if("discord" in url.url):
+                await webhook.send(f"Possible discord invite found: {url.url}")
+        await webhook.close()
 
 
 def main():
 
-    username = "juicynotify"
+    username = "stronomic"
     id = fetch_profile_id(username)
     n = 3
     i = 0
     max_i = len(cookie_header_pairs)
     while(True):
+        start_time = time.time()
         proxy = get_proxy()
         loop = asyncio.get_event_loop()
         all_groups = asyncio.gather(*[get_recent(id, username, proxy, i) for _ in range(n)])
         try:
             loop.run_until_complete(all_groups)
+            #print(f"Iteration took {time.time() - start_time} seconds")
         except Exception:
             print("Switching cookies")
             if(i >= max_i):
