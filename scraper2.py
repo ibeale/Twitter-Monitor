@@ -3,10 +3,11 @@ import aiohttp
 import asyncio
 import lxml.html
 from datetime import datetime
-from utils import get_proxy
+from utils import get_proxy, get_proxy_list
 import webbrowser
 from dhooks import Webhook, Embed
 import json
+import random
 import time
 
 global_id = 0
@@ -55,13 +56,17 @@ class Tweet:
 
 async def fetch(session, headers, params, cookies):
     try:
+        start_fetch = datetime.now().strftime("%I:%M:%S.%f %p")
         async with session.get("https://api.twitter.com/1.1/statuses/user_timeline.json", headers=headers, params=params, cookies=cookies) as response:
+            end_fetch = datetime.now().strftime("%I:%M:%S.%f %p")
             return await response.json()
-    except requests.exceptions as e:
-        print(e)
 
 
-# takes a url, and takes number of tweets to
+    except Exception as e:
+        print("Error fetching")
+        raise e
+
+
 async def get_recent(id, username, proxy, i):
     cookies = cookie_header_pairs[i]['cookie']
 
@@ -82,14 +87,12 @@ async def get_recent(id, username, proxy, i):
     ('include_ext_alt_text', 'true'),
     ('include_reply_count', 'true'),
 )
+
     async with aiohttp.ClientSession() as session:
         session.proxies=proxy
-        start_fetch = time.time()
         json_data = await fetch(session, headers, params, cookies)
-        print(f"Took {time.time() - start_fetch} seconds to fetch")
-        #global counter
-        #counter += 1
-        #print(f"Scrape number {counter}")
+        #f = open('timelinejson.txt', 'w')
+        #json.dump(json_data, f, indent=4)
 
     try:
         new_tweet = Tweet()
@@ -108,24 +111,22 @@ async def get_recent(id, username, proxy, i):
             url_class.url = url["expanded_url"]
             new_tweet.links_in_tweet.append(url_class)
         global global_id
-        if(global_id == 0):
-            global_id = int(new_tweet.id)
-        elif(int(new_tweet.id) > global_id):
+        if(int(new_tweet.id) > global_id):
             global_id = int(new_tweet.id)
             await print_new(new_tweet)
-    except Exception as ke:
-        print(ke)
-        raise
+    except Exception as e:
+        print("Error Parsing")
+        raise e
 
 
 async def print_new(new_tweet: Tweet):
     print(new_tweet.text)
-    current_time = datetime.now().strftime("%I:%M:%S.%f %p")
-    print(current_time)
-    #if(new_tweet.links_in_tweet):
-        #for link in new_tweet.links_in_tweet:
-            #webbrowser.open_new_tab(link.url)
+    print(datetime.now().strftime("%I:%M:%S.%f %p"))
     await post_to_webhook(new_tweet)
+    if(new_tweet.links_in_tweet):
+        for link in new_tweet.links_in_tweet:
+            webbrowser.open_new_tab(link.url)
+
 
 
 
@@ -146,47 +147,53 @@ def fetch_profile_id(username):
 
 
 async def post_to_webhook(new_tweet:Tweet):
-        start_time = time.time()
-        url = "https://discordapp.com/api/webhooks/644312784238280704/6kpuCfI1QVO0uEa_DZBIzZYMDzH97Sf86ii1_EFhVOajcdel9cgeNjMEay5HyLj2ZWDS"
-        text = new_tweet.text
-        webhook = Webhook.Async(url)
-        embed = Embed(title=f"Link to tweet", url=f"https://twitter.com/{new_tweet.created_by.screen_name}/status/{new_tweet.id}")
-        embed.set_author(name=f"New tweet from {new_tweet.created_by.screen_name}", url=f'https://twitter.com/{new_tweet.created_by.screen_name}', icon_url=new_tweet.created_by.profile_image_url)
-        for mentioned_user in new_tweet.mentioned_users:
-            text = text.replace(f"@{mentioned_user.screen_name}", f"[@{mentioned_user.screen_name}](https://twitter.com/{mentioned_user.screen_name})")
-        embed.add_field(name="Content: ", value=new_tweet.text, inline=True)
-        for url in new_tweet.links_in_tweet:
-            embed.add_field(name="Link Found: ", value=f"{url.url}")
-        embed.set_footer(text=f'Monitor by ike_on')
-        await webhook.send(embed=embed)
-        print(f"Took {time.time() - start_time} seconds to send to webhook")
-        for url in new_tweet.links_in_tweet:
-            if("discord" in url.url):
-                await webhook.send(f"Possible discord invite found: {url.url}")
-        await webhook.close()
+    start_time = time.time()
+    url = "https://discordapp.com/api/webhooks/644694815094734848/Y9Ixa2Wh7xpF7uQzbzX8uua-cERYWbtyoD3Xg8-7NJmUl47UTN_IF-QD5W_W-3oymtdy"
+    text = new_tweet.text
+    webhook = Webhook.Async(url)
+    embed = Embed(title=f"Link to tweet", url=f"https://twitter.com/{new_tweet.created_by.screen_name}/status/{new_tweet.id}")
+    embed.set_author(name=f"New tweet from {new_tweet.created_by.screen_name}", url=f'https://twitter.com/{new_tweet.created_by.screen_name}', icon_url=new_tweet.created_by.profile_image_url)
+    for mentioned_user in new_tweet.mentioned_users:
+        text = text.replace(f"@{mentioned_user.screen_name}", f"[@{mentioned_user.screen_name}](https://twitter.com/{mentioned_user.screen_name})")
+    embed.add_field(name="Content: ", value=text, inline=True)
+    for url in new_tweet.links_in_tweet:
+        embed.add_field(name="Link Found: ", value=f"{url.url}")
+    embed.set_footer(text=f'Monitor by ike_on')
+    await webhook.send(embed=embed)
+    print(f"Took {time.time() - start_time} seconds to send to webhook")
+    for url in new_tweet.links_in_tweet:
+        if("discord" in url.url):
+            await webhook.send(f"Possible discord invite found: {url.url}")
+    await webhook.close()
 
 
 def main():
 
     username = "stronomic"
     id = fetch_profile_id(username)
-    n = 3
-    i = 0
+    n = 2
     max_i = len(cookie_header_pairs)
+    i = random.randint(0, (max_i - 1))
+    print(f"Using cookies {i}")
+    loop = asyncio.get_event_loop()
+    proxy_list = get_proxy_list()
+    max_j = len(proxy_list)
+    j = random.randint(0, (max_j - 1))
     while(True):
         start_time = time.time()
-        proxy = get_proxy()
-        loop = asyncio.get_event_loop()
+        proxy = proxy_list[j]
         all_groups = asyncio.gather(*[get_recent(id, username, proxy, i) for _ in range(n)])
         try:
             loop.run_until_complete(all_groups)
-            #print(f"Iteration took {time.time() - start_time} seconds")
-        except Exception:
-            print("Switching cookies")
+        except Exception as e:
+            print(e)
+            print(f"Cookie {i} not working. Switching cookies and proxy")
+            j = random.randint(0, (max_j - 1))
             if(i >= max_i):
                 i = 0
             else:
                 i += 1
+            print(f"Using cookies {i} and proxy {proxy_list[j]}")
 
 
 if __name__ == '__main__':
