@@ -10,6 +10,8 @@ import json
 import random
 import time
 import traceback
+from flask import Flask
+from os import environ
 
 
 
@@ -200,6 +202,8 @@ class Monitor:
                 print(f"Using cookies {i} and proxy {proxy_list[j]}")
 
 names = ["damhype", "stronomic"]
+app = Flask(__name__)
+app.rim(environ.get('PORT'))
 usernames = [name for _ in range(5) for name in names]
 monitor = Monitor("cookie_pairs.json", usernames)
 monitor.run()
