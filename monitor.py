@@ -201,10 +201,11 @@ class Monitor:
                     i += 1
                 print(f"Using cookies {i} and proxy {proxy_list[j]}")
 
-names = ["damhype", "stronomic"]
+
 app = Flask(__name__)
 @app.route("/")
 def index():
+	names = ["damhype", "stronomic"]
 	usernames = [name for _ in range(5) for name in names]
 	monitor = Monitor("cookie_pairs.json", usernames)
 	monitor.run()
