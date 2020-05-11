@@ -203,7 +203,8 @@ class Monitor:
 
 names = ["damhype", "stronomic"]
 app = Flask(__name__)
-app.rim(environ.get('PORT'))
-usernames = [name for _ in range(5) for name in names]
-monitor = Monitor("cookie_pairs.json", usernames)
-monitor.run()
+@app.route("/")
+def index():
+	usernames = [name for _ in range(5) for name in names]
+	monitor = Monitor("cookie_pairs.json", usernames)
+	monitor.run()
