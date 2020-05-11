@@ -12,6 +12,7 @@ import time
 import traceback
 from flask import Flask
 from os import environ
+import threading
 
 
 
@@ -56,17 +57,19 @@ class Tweet:
 
 class Monitor:
 
-    def __init__(self, cookie_pairs, usernames):
+    def __init__(self, cookie_pairs, usernames, hookurl):
         self.global_id = 0
         self.cookie_header_pairs = json.load(open(cookie_pairs, "r"))
         self.usernames = usernames
         self.userIDs = [self.fetch_profile_id(
             username) for username in self.usernames]
-        self.webhookURL = "https://discordapp.com/api/webhooks/709195966334369823/akcGinHAS4E2V4X7tSosPj8wzk9JwqHTFU15Yzes_CqYlZ8R7RCZNojgqHDSSurTrXaD"
+        self.webhookURL = hookurl
+        self.errorWebhookURL = "https://discordapp.com/api/webhooks/644694815094734848/Y9Ixa2Wh7xpF7uQzbzX8uua-cERYWbtyoD3Xg8-7NJmUl47UTN_IF-QD5W_W-3oymtdy"
         self.webhook = Webhook(self.webhookURL)
+        self.errorWebHook = Webhook(self.errorWebhookURL)
 
     async def fetch(self, session, headers, params, cookies):
-        print("Getting user page")
+        # print("Getting user page")
         start_fetch = datetime.now().strftime("%I:%M:%S.%f %p")
         async with session.get("https://api.twitter.com/1.1/statuses/user_timeline.json", headers=headers, params=params, cookies=cookies) as response:
             end_fetch = datetime.now().strftime("%I:%M:%S.%f %p")
@@ -74,7 +77,7 @@ class Monitor:
 
     async def get_recent(self, id, username, proxy, i):
         while True:
-            print("Getting recent tweets")
+            # print("Getting recent tweets")
             cookies = self.cookie_header_pairs[i]['cookie']
 
             headers = self.cookie_header_pairs[i]['header']
@@ -143,9 +146,9 @@ class Monitor:
         print(new_tweet.text)
         print(datetime.now().strftime("%I:%M:%S.%f %p"))
         self.post_to_webhook(new_tweet)
-        if(new_tweet.links_in_tweet):
-            for link in new_tweet.links_in_tweet:
-                webbrowser.open_new_tab(link.url)
+        # if(new_tweet.links_in_tweet):
+        #     for link in new_tweet.links_in_tweet:
+        #         webbrowser.open_new_tab(link.url)
 
     def post_to_webhook(self, new_tweet: Tweet):
         print("Posting to Webhook")
@@ -162,22 +165,22 @@ class Monitor:
         embed.add_field(name="Content: ", value=text, inline=True)
         for url in new_tweet.links_in_tweet:
             embed.add_field(name="Link Found: ", value=f"{url.url}")
-        embed.set_footer(text=f'Monitor by ike_on recursive {datetime.now().strftime("%I:%M:%S.%f %p")}')
+        embed.set_footer(text=f'Monitor by ike_on {datetime.now().strftime("%I:%M:%S.%f %p")}')
         # print(f"Took {time.time() - start_time} seconds to send to webhook")
         self.webhook.send(embed=embed)
         print(f"Took {time.time() - start_time} seconds to send to webhook")
         for url in new_tweet.links_in_tweet:
             if("discord" in url.url):
-                webhook.send(f"Possible discord invite found: {url.url}")
-        # await webhook.close()
+                self.webhook.send(f"Possible discord invite found: {url.url}")
 
     def run(self):
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
         n = 2
         max_i = len(self.cookie_header_pairs)
         # i = random.randint(0, (max_i - 1))
         i=0;
         print(f"Using cookies {i}")
-        loop = asyncio.get_event_loop()
         proxy_list = get_proxy_list()
         max_j = len(proxy_list)
         j = random.randint(0, (max_j - 1))
@@ -189,9 +192,13 @@ class Monitor:
             print("---------")
             start_time = time.time()
             try:
-                loop.run_until_complete(all_groups)
+                self.loop.run_until_complete(all_groups)
             except Exception as e:
-                
+                embed = Embed(title="Error Logger", color="Red")
+                embed.set_author("Twitter Monitor")
+                embed.add_field(name=f"{repr(e)}", value=str(e))
+                embed.add_field(name="Stack Trace", value=traceback.format_exc())
+                embed.add_field(name="Cookie info", value=f"Cookie {i} not working. Switching cookies and proxy")
                 print(f"Cookie {i} not working. Switching cookies and proxy")
                 print(traceback.format_exc())
                 j = random.randint(0, (max_j - 1))
@@ -200,10 +207,19 @@ class Monitor:
                 else:
                     i += 1
                 print(f"Using cookies {i} and proxy {proxy_list[j]}")
+                embed.add_field(name="New Cookie & Proxy", value=f"Using cookies {i} and proxy {proxy_list[j]}")
+                self.errorWebHook.send(embed=embed)
 
 
-
-names = ["lunarisachef", "stronomic"]
-usernames = [name for _ in range(5) for name in names]
-monitor = Monitor("cookie_pairs.json", usernames)
-monitor.run()
+if __name__ == "__main__":
+    
+    names = ["lunarisachef", "damhype"]
+    hookurls = ["https://discordapp.com/api/webhooks/709195966334369823/akcGinHAS4E2V4X7tSosPj8wzk9JwqHTFU15Yzes_CqYlZ8R7RCZNojgqHDSSurTrXaD","https://discordapp.com/api/webhooks/709447557645991976/4knIt-DX_GruciFSjfiq3dla8rPC-xvt210t5g4JzJpp-fL-YumdOz0ytBPhBHJ4oV-Z"]
+    usernames = [name for _ in range(5) for name in names]
+    workers = [Monitor("cookie_pairs.json", usernames, hookurl) for hookurl in hookurls]
+    threads = []
+    for i in range(len(hookurls)):
+        print(hookurls[i])
+        t = threading.Thread(target=Monitor("cookie_pairs.json", usernames, hookurls[i]).run)
+        threads.append(t)
+        t.start()
