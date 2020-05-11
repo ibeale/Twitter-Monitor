@@ -208,3 +208,4 @@ def index():
 	usernames = [name for _ in range(5) for name in names]
 	monitor = Monitor("cookie_pairs.json", usernames)
 	monitor.run()
+	return "Hi"
