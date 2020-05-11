@@ -60,63 +60,63 @@ class Monitor:
         self.usernames = usernames
         self.userIDs = [self.fetch_profile_id(
             username) for username in self.usernames]
-        self.webhookURL = "https://discordapp.com/api/webhooks/644694815094734848/Y9Ixa2Wh7xpF7uQzbzX8uua-cERYWbtyoD3Xg8-7NJmUl47UTN_IF-QD5W_W-3oymtdy"
+        self.webhookURL = "https://discordapp.com/api/webhooks/709195966334369823/akcGinHAS4E2V4X7tSosPj8wzk9JwqHTFU15Yzes_CqYlZ8R7RCZNojgqHDSSurTrXaD"
+        self.webhook = Webhook(self.webhookURL)
 
     async def fetch(self, session, headers, params, cookies):
+        print("Getting user page")
         start_fetch = datetime.now().strftime("%I:%M:%S.%f %p")
         async with session.get("https://api.twitter.com/1.1/statuses/user_timeline.json", headers=headers, params=params, cookies=cookies) as response:
             end_fetch = datetime.now().strftime("%I:%M:%S.%f %p")
             return await response.json()
 
     async def get_recent(self, id, username, proxy, i):
-        cookies = self.cookie_header_pairs[i]['cookie']
+        while True:
+            print("Getting recent tweets")
+            cookies = self.cookie_header_pairs[i]['cookie']
 
-        headers = self.cookie_header_pairs[i]['header']
+            headers = self.cookie_header_pairs[i]['header']
 
-        params = (
-            ('count', '40'),
-            ('include_my_retweet', '1'),
-            ('since_id', '1193304574762852358'),
-            ('include_rts', '1'),
-            ('user_id', f'{id}'),
-            ('cards_platform', 'Web-13'),
-            ('include_entities', '1'),
-            ('include_user_entities', '1'),
-            ('include_cards', '1'),
-            ('send_error_codes', '1'),
-            ('tweet_mode', 'extended'),
-            ('include_ext_alt_text', 'true'),
-            ('include_reply_count', 'true'),
-        )
+            params = (
+                ('count', '40'),
+                ('include_my_retweet', '1'),
+                ('since_id', '1193304574762852358'),
+                ('include_rts', '1'),
+                ('user_id', f'{id}'),
+                ('cards_platform', 'Web-13'),
+                ('include_entities', '1'),
+                ('include_user_entities', '1'),
+                ('include_cards', '1'),
+                ('send_error_codes', '1'),
+                ('tweet_mode', 'extended'),
+                ('include_ext_alt_text', 'true'),
+                ('include_reply_count', 'true'),
+            )
 
-        async with aiohttp.ClientSession() as session:
-            session.proxies = proxy
-            json_data = await self.fetch(session, headers, params, cookies)
-            f = open('timelinejson.txt', 'w')
-            json.dump(json_data, f, indent=4)
+            async with aiohttp.ClientSession() as session:
+                session.proxies = proxy
+                json_data = await self.fetch(session, headers, params, cookies)
 
-        try:
-            new_tweet = Tweet()
-            new_tweet.id = json_data[0]["id_str"]
-            new_tweet.text = json_data[0]["full_text"]
-            new_tweet.created_by = UserProfile(
+            if int(json_data[0]["id_str"]) > self.global_id:
+                self.global_id = int(json_data[0]["id_str"])
+                new_tweet = Tweet()
+                new_tweet.id = json_data[0]["id_str"]
+                new_tweet.text = json_data[0]["full_text"]
+                new_tweet.created_by = UserProfile(
                 username=json_data[0]["user"]["name"], screen_name=json_data[0]["user"]["screen_name"], userid=json_data[0]["user"]["id_str"])
-            new_tweet.created_by.profile_image_url = json_data[0]["user"]["profile_image_url"]
-            new_tweet.created_by.description = json_data[0]["user"]["description"]
-            new_tweet.created_by.location = json_data[0]["user"]["location"]
-            for mentioned_user in json_data[0]["entities"]["user_mentions"]:
-                new_tweet.mentioned_users.append(User(
+                new_tweet.created_by.profile_image_url = json_data[0]["user"]["profile_image_url"]
+                new_tweet.created_by.description = json_data[0]["user"]["description"]
+                new_tweet.created_by.location = json_data[0]["user"]["location"]
+                for mentioned_user in json_data[0]["entities"]["user_mentions"]:
+                    new_tweet.mentioned_users.append(User(
                     username=mentioned_user["name"], userid=mentioned_user["id_str"], screen_name=mentioned_user["screen_name"]))
-            urls = json_data[0]["entities"]["urls"]
-            for url in urls:
-                url_class = URL()
-                url_class.tco = url["url"]
-                url_class.url = url["expanded_url"]
-                new_tweet.links_in_tweet.append(url_class)
-            await self.print_new(new_tweet)
-        except IndexError as e:
-            print("Error Parsing")
-            raise e
+                    urls = json_data[0]["entities"]["urls"]
+                    for url in urls:
+                        url_class = URL()
+                        url_class.tco = url["url"]
+                        url_class.url = url["expanded_url"]
+                        new_tweet.links_in_tweet.append(url_class)
+                self.print_new(new_tweet)
 
     def fetch_profile_id(self, username):
         headers = {
@@ -135,20 +135,21 @@ class Monitor:
             '//*[@id="page-container"]/div[1]/div/div[2]/div/div/div[2]/div/div/@data-user-id')[0]
         return id_number
 
-    async def print_new(self, new_tweet: Tweet):
-        if(int(new_tweet.id) > self.global_id):
-            self.global_id = int(new_tweet.id)
-            print(new_tweet.text)
-            print(datetime.now().strftime("%I:%M:%S.%f %p"))
-            await self.post_to_webhook(new_tweet)
-            if(new_tweet.links_in_tweet):
-                for link in new_tweet.links_in_tweet:
-                    webbrowser.open_new_tab(link.url)
+    def print_new(self, new_tweet: Tweet):
+        print("Found New Tweet")
+        self.global_id = int(new_tweet.id)
+        print(new_tweet.text)
+        print(datetime.now().strftime("%I:%M:%S.%f %p"))
+        self.post_to_webhook(new_tweet)
+        if(new_tweet.links_in_tweet):
+            for link in new_tweet.links_in_tweet:
+                webbrowser.open_new_tab(link.url)
 
-    async def post_to_webhook(self, new_tweet: Tweet):
+    def post_to_webhook(self, new_tweet: Tweet):
+        print("Posting to Webhook")
         start_time = time.time()
         text = new_tweet.text
-        webhook = Webhook.Async(self.webhookURL)
+        # webhook = Webhook.Async(self.webhookURL)
         embed = Embed(title=f"Link to tweet",
                       url=f"https://twitter.com/{new_tweet.created_by.screen_name}/status/{new_tweet.id}")
         embed.set_author(name=f"New tweet from {new_tweet.created_by.screen_name}",
@@ -159,36 +160,38 @@ class Monitor:
         embed.add_field(name="Content: ", value=text, inline=True)
         for url in new_tweet.links_in_tweet:
             embed.add_field(name="Link Found: ", value=f"{url.url}")
-        embed.set_footer(text=f'Monitor by ike_on not recursive {datetime.now().strftime("%I:%M:%S.%f %p")}')
-        await webhook.send(embed=embed)
+        embed.set_footer(text=f'Monitor by ike_on recursive {datetime.now().strftime("%I:%M:%S.%f %p")}')
+        # print(f"Took {time.time() - start_time} seconds to send to webhook")
+        self.webhook.send(embed=embed)
         print(f"Took {time.time() - start_time} seconds to send to webhook")
         for url in new_tweet.links_in_tweet:
             if("discord" in url.url):
-                await webhook.send(f"Possible discord invite found: {url.url}")
-        await webhook.close()
+                webhook.send(f"Possible discord invite found: {url.url}")
+        # await webhook.close()
 
     def run(self):
         n = 2
         max_i = len(self.cookie_header_pairs)
         # i = random.randint(0, (max_i - 1))
-        i = 1
+        i=0;
         print(f"Using cookies {i}")
         loop = asyncio.get_event_loop()
         proxy_list = get_proxy_list()
         max_j = len(proxy_list)
         j = random.randint(0, (max_j - 1))
+        proxy = proxy_list[j]
+        j=0
         while(True):
-            start_time = time.time()
-            proxy = None
             all_groups = asyncio.gather(
                 *[self.get_recent(self.userIDs[j], self.usernames[j], proxy, i) for j in range(len(self.usernames))])
+            print("---------")
+            start_time = time.time()
             try:
                 loop.run_until_complete(all_groups)
             except Exception as e:
                 
                 print(f"Cookie {i} not working. Switching cookies and proxy")
                 print(traceback.format_exc())
-                return
                 j = random.randint(0, (max_j - 1))
                 if(i >= max_i):
                     i = 0
@@ -196,7 +199,7 @@ class Monitor:
                     i += 1
                 print(f"Using cookies {i} and proxy {proxy_list[j]}")
 
-
-usernames = ["damhype", "damhype"]
+names = ["damhype", "stronomic"]
+usernames = [name for _ in range(5) for name in names]
 monitor = Monitor("cookie_pairs.json", usernames)
 monitor.run()

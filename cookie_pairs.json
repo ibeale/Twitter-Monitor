@@ -34,39 +34,6 @@
 	},
 	{
 		"cookie": {
-			"personalization_id": "v1_KqP041/+sOEpp80tESksXw==",
-			"guest_id": "v1%3A157380260729121251",
-			"gt": "1195240889444007936",
-			"ct0": "4c361cd32c4ae2fdb1202b8a42534796",
-			"external_referer": "padhuUp37zhJObO73CqsXZ0%2BLgQ%2Btq8mzPyoRg8vB3o%3D|0|8e8t2xd8A2w%3D",
-			"_ga": "GA1.2.1841729632.1573802611",
-			"_gid": "GA1.2.343867177.1573802611",
-			"dnt": "1",
-			"ads_prefs": "HBISAAA=",
-			"kdt": "n1ScnBw1Q98lOWB6B9eGVDgCpxA0VqJXSJG68dg1",
-			"remember_checked_on": "1",
-			"twid": "u=1179826234773008384",
-			"u": "c035e4f2cf67726a0952d297268c7e22",
-			"auth_token": "12bff4eb3b9e0fff4d24e4a11cbca42128c1b6ce",
-			"_gat": "1",
-			"lang": "en"
-		},
-		"header": {
-			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0",
-			"Accept": "text/plain, */*; q=0.01",
-			"Accept-Language": "en-US,en;q=0.5",
-			"Authorization": "Bearer AAAAAAAAAAAAAAAAAAAAAF7aAAAAAAAASCiRjWvh7R5wxaKkFp7MM%2BhYBqM%3DbQ0JPmjU9F6ZoMhDfI4uTNAaQuTDm2uO9x3WFVr2xBZ2nhjdP0",
-			"X-Twitter-Auth-Type": "OAuth2Session",
-			"X-Csrf-Token": "4c361cd32c4ae2fdb1202b8a42534796",
-			"X-Twitter-Client-Version": "Twitter-TweetDeck-blackbird-chrome/4.0.191015095829 web/",
-			"Origin": "https://tweetdeck.twitter.com",
-			"Connection": "keep-alive",
-			"Referer": "https://tweetdeck.twitter.com/",
-			"TE": "Trailers"
-		}
-	},
-	{
-		"cookie": {
 			"personalization_id": "v1_6+oJYDzT0lGxwvWSKrgCUA==",
 			"guest_id": "v1%3A157359918873531434",
 			"_ga": "GA1.2.1262219233.1573599186",
@@ -100,37 +67,39 @@
 		}
 	},
 	{
-		"cookie": {
-			"personalization_id": "v1_tLbMsPVB4ja2iRuDXSUorg==",
-			"guest_id": "v1%3A157380466070992223",
-			"gt": "1195249494134149121",
-			"ct0": "ad31334a6fa47b6448ec4f0a13905f11",
-			"_twitter_sess": "BAh7CiIKZmxhc2hJQzonQWN0aW9uQ29udHJvbGxlcjo6Rmxhc2g6OkZsYXNo%250ASGFzaHsABjoKQHVzZWR7ADoPY3JlYXRlZF9hdGwrCBJaEW5uAToMY3NyZl9p%250AZCIlMTg0NjcxYjJlNjFmNDk4OWQxZWQwY2MxNTRlNmYwNjU6B2lkIiVhNWEz%250AY2RjYWI2NDg4MzhiM2M4NDdmZGZmNGY3NjBkODoJdXNlcmwrCQBQVB5zOIIO--f001c9188f045baa2086ce4bf73731ccc95a45ea",
-			"external_referer": "padhuUp37zhJObO73CqsXZ0%2BLgQ%2Btq8mzPyoRg8vB3o%3D|0|8e8t2xd8A2w%3D",
-			"_ga": "GA1.2.237630313.1573804662",
-			"_gid": "GA1.2.1125422437.1573804662",
-			"_gat": "1",
-			"dnt": "1",
-			"ads_prefs": "HBISAAA=",
-			"kdt": "nJY2UTqurliJEnSkVAn5xzPnZTvLOjhnyPxM9zRd",
-			"remember_checked_on": "1",
-			"twid": "u=1045460130584612864",
-			"u": "695cc2540487945474c01bcbc24ce913",
-			"auth_token": "e1081ae01ad1a875b9f9fd6b0b2bce9aa5d36c42",
-			"lang": "en"
-		},
-		"header": {
-			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0",
-			"Accept": "text/plain, */*; q=0.01",
-			"Accept-Language": "en-US,en;q=0.5",
-			"Authorization": "Bearer AAAAAAAAAAAAAAAAAAAAAF7aAAAAAAAASCiRjWvh7R5wxaKkFp7MM%2BhYBqM%3DbQ0JPmjU9F6ZoMhDfI4uTNAaQuTDm2uO9x3WFVr2xBZ2nhjdP0",
-			"X-Twitter-Auth-Type": "OAuth2Session",
-			"X-Csrf-Token": "ad31334a6fa47b6448ec4f0a13905f11",
-			"X-Twitter-Client-Version": "Twitter-TweetDeck-blackbird-chrome/4.0.191015095829 web/",
-			"Origin": "https://tweetdeck.twitter.com",
-			"Connection": "keep-alive",
-			"Referer": "https://tweetdeck.twitter.com/",
-			"TE": "Trailers"
-		}
+	"header" : {
+		"authority": "api.twitter.com",
+		"authorization": "Bearer AAAAAAAAAAAAAAAAAAAAAF7aAAAAAAAASCiRjWvh7R5wxaKkFp7MM%2BhYBqM%3DbQ0JPmjU9F6ZoMhDfI4uTNAaQuTDm2uO9x3WFVr2xBZ2nhjdP0",
+		"accept": "text/plain, */*; q=0.01",
+		"x-csrf-token": "d4b8db80eed44c89d3e63c2c29b2d27e",
+		"x-twitter-auth-type": "OAuth2Session",
+		"x-twitter-client-version": "Twitter-TweetDeck-blackbird-chrome/4.0.200324181618 web/",
+		"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36",
+		"origin": "https://tweetdeck.twitter.com",
+		"sec-fetch-site": "same-site",
+		"sec-fetch-mode": "cors",
+		"sec-fetch-dest": "empty",
+		"referer": "https://tweetdeck.twitter.com/",
+		"accept-language": "en-US,en;q=0.9"
+	},
+	"cookie": {
+		"gt":"1259557233450348544",
+		"_ga":"GA1.2.1776280771.1589136820",
+		"_gid":"GA1.2.2109018699.1589136820", 
+		"dnt":"1", "kdt":"ZyZX0G3gNAWKQ7Ax4Lt6qSiqHZ59XJ0gNyDam99C",
+		"remember_checked_on":"1",
+		"csrf_same_site_set":"1",
+		"csrf_same_site":"1",
+		"personalization_id":"v1_EtaYUp/O4GgTKeOxY9pekg==",
+		"guest_id":"v1%3A158913855398472280",
+		"ct0":"d4b8db80eed44c89d3e63c2c29b2d27e",
+		"_gat":"1",
+		"external_referer":"padhuUp37zhJObO73CqsXZ0%2BLgQ%2Btq8mzPyoRg8vB3o%3D|0|8e8t2xd8A2w%3D",
+		"ads_prefs":"HBISAAA=",
+		"_twitter_sess":"BAh7CiIKZmxhc2hJQzonQWN0aW9uQ29udHJvbGxlcjo6Rmxhc2g6OkZsYXNo%250ASGFzaHsABjoKQHVzZWR7ADoPY3JlYXRlZF9hdGwrCMD%252BCQByAToMY3NyZl9p%250AZCIlMzRhNjFiYjg0OTM3MjMzMmViZjdjZTE0ZWYxNGZkYzE6B2lkIiU2YjBi%250ANDc1ZDRjODkwZThhMTNlMTgzNmIzMjBmYzE0MzoJdXNlcmwrCQDwVKS1lV8Q--022452f758486347cff70e98a72b16c57debdb82",
+		"twid":"u=1179826234773008384",
+		"u":"93c81c00f8fb6aa365ca4fb54d3b29c9",
+		"auth_token":"466987f9c6002160b9163facd7df62549595d347",
+		"lang":"en"}
 	}
 ]
