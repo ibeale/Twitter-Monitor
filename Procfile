@@ -1,1 +1,1 @@
-worker: python monitor.py
+worker: gunicorn monitor:app --log-file
